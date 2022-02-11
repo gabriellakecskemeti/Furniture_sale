@@ -37,7 +37,7 @@ def test_calculate_discount_in_advent(day: date, total: Decimal, expected: Decim
 
 
 _invalid_test_data = [
-    pytest.param("A", Decimal("0.01"), id="1:Date in 2021 Advent, first tier")
+    pytest.param("A", Decimal("0.01"), id="99:Date in 2021 Advent, first tier")
 ]
 
 
