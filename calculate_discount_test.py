@@ -4,6 +4,7 @@ from datetime import date
 from decimal import Decimal
 import pytest
 
+# defining test data to check calculation out of advent. Discount should be always 0
 _test_data_out_of_advent = [
     pytest.param(date(2021, 11, 30), Decimal("0.01"), Decimal("0"), id="1:Date in 2021 Advent, first tier"),
     pytest.param(date(2022, 11, 25), Decimal("0.01"), Decimal("0"), id="2:Date one day before Advent, first tier"),
@@ -17,6 +18,8 @@ _test_data_out_of_advent = [
 ]
 
 
+# .mark: to set metadata on this test function
+# .parametrize: Defining multiple calls based on _test_data_out_of_advent
 @pytest.mark.parametrize("day,total,expected", _test_data_out_of_advent)
 def test_calculate_discount_out_of_advent(day: date, total: Decimal, expected: Decimal):
     # Act
@@ -25,6 +28,11 @@ def test_calculate_discount_out_of_advent(day: date, total: Decimal, expected: D
     assert actual == expected
 
 
+# defining test data to check calculation in advent period on weekdays mo-fr.
+# Discount depends on total.
+# First tier 0,01-99,9 discount is 0,05
+# Second tier 100-499,99 discount is 0,1
+# Third tier 500 or more, discount is 0,2
 _test_data_in_advent = [
     pytest.param(date(2022, 11, 28), Decimal("0.01"), Decimal("0.05"), id="7:Week1, BV1,first tier"),
     pytest.param(date(2022, 12, 2), Decimal("99.99"), Decimal("0.05"), id="8:Week1, BV2, first tier"),
@@ -50,11 +58,13 @@ _test_data_in_advent = [
     pytest.param(date(2022, 12, 16), Decimal("100"), Decimal("0.1"), id="28:Week3, BV2, second tier"),
     pytest.param(date(2022, 12, 13), Decimal("1000"), Decimal("0.2"), id="29:Week3, EP, third tier"),
     pytest.param(date(2022, 12, 19), Decimal("0.01"), Decimal("0.05"), id="30:Week4, BV1,first tier"),
-    pytest.param(date(2022, 12, 23), Decimal("499.999999"), Decimal("0.1"), id="31:Week4, BV2, second tier, truncation"),
+    pytest.param(date(2022, 12, 23), Decimal("499.999999"), Decimal("0.1"),
+                 id="31:Week4, BV2, second tier, truncation"),
     pytest.param(date(2022, 12, 21), Decimal("1000"), Decimal("0.2"), id="32:Week4, EP, third tier")
 ]
 
-
+# .mark: to set metadata on this test function
+# .parametrize: Defining multiple calls based on test_data_in_advent
 @pytest.mark.parametrize("day,total,expected", _test_data_in_advent)
 def test_calculate_discount_in_advent(day: date, total: Decimal, expected: Decimal):
     # Act
@@ -63,6 +73,11 @@ def test_calculate_discount_in_advent(day: date, total: Decimal, expected: Decim
     assert actual == expected
 
 
+# Defining test data for calculation on saturdays in advent period
+# Discount depends on total.
+# First tier 0,01-99,9 discount is 0,15
+# Second tier 100-499,99 discount is 0,19
+# Third tier 500 or more, discount is 0,28
 _test_data_in_advent_saturday = [
     pytest.param(date(2022, 11, 26), Decimal("99.99"), Decimal("0.15"), id="33:Saturday1, first tier"),
     pytest.param(date(2022, 11, 26), Decimal("100"), Decimal("0.19"), id="34:Saturday1, second tier"),
@@ -73,7 +88,8 @@ _test_data_in_advent_saturday = [
     pytest.param(date(2022, 12, 24), Decimal("1000"), Decimal("0.28"), id="39:Saturday1, third tier")
 ]
 
-
+# .mark: to set metadata on this test function
+# .parametrize: Defining multiple calls based on test_data_in_advent_saturday
 @pytest.mark.parametrize("day,total,expected", _test_data_in_advent_saturday)
 def test_calculate_discount_in_advent_saturday(day: date, total: Decimal, expected: Decimal):
     # Act
@@ -82,6 +98,8 @@ def test_calculate_discount_in_advent_saturday(day: date, total: Decimal, expect
     assert actual == expected
 
 
+# Defining test data to check if the method calculate_discount raises value error
+# as defined in the specification Exercise1
 _invalid_test_data = [
     pytest.param(date(2022, 11, 27), Decimal("100"), id="43:not allowed date"),
     pytest.param(date(2022, 12, 4), Decimal("100"), id="44:not allowed date"),
@@ -101,8 +119,17 @@ _invalid_test_data = [
 ]
 
 
+# .mark: to set metadata on this test function
+# .parametrize: Defining multiple calls based on _invalid_test_data
 @pytest.mark.parametrize("day,total", _invalid_test_data)
 def test_invalid_arguments(day: date, total: Decimal):
+    """
+    The method is testing all specified Value errors. The Error message is not checked,
+    The method control only if a value error have been raised or not.
+    :param day: date of purchase
+    :param total: total amount of purchase
+    :return: passed if the value error is raised.
+    """
     with pytest.raises(ValueError) as exception_info:
         calculate_discount(day, total)
     assert exception_info.type == ValueError
